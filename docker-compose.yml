@@ -1,0 +1,46 @@
+version: '3.2'
+
+services:
+  influxdb:
+    image: "influxdb:latest"
+    build: influxdb
+    env_file: configuration.env
+    ports:
+  # Administrator interface port
+      - "8083:8083"
+  # HTTP API port 
+      - '8086:8086'
+    networks:
+      tik_net:
+    volumes:
+      - influxdb_data:/var/lib/influxdb
+      - ./etc/telegraf:/etc/telegraf
+  grafana:
+    image: "grafana:latest"
+    build: grafana
+    env_file: configuration.env
+    links:
+      - influxdb
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana_data:/var/lib/grafana
+  kapacitor:
+    image: "kapacitor:latest"
+    build: kapacitor
+    ports:
+      - "9092:9092" 
+    networks:
+      tik_net:
+    volumes:
+      - kapacitor_data:/var/lib/kapacitor
+
+volumes:
+  grafana_data: {}
+  influxdb_data: {}
+  kapacitor_data: {}
+  telegraf_data: {}
+  
+networks:
+  tik_net:
+    driver: bridge
